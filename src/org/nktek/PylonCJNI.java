@@ -1,3 +1,5 @@
+package org.nktek;
+
 import java.util.Scanner;
 
 public class PylonCJNI {
@@ -7,55 +9,58 @@ public class PylonCJNI {
     }
 
     // Directly mapped Pylon SDK functions
-    private native long PylonInitialize();
-    private native long PylonEnumerateDevices();
-    private native long PylonCreateDeviceByIndex(long index);
-    private native long PylonDeviceOpen();
-    private native long PylonDeviceClose();
-    private native long PylonDeviceDestroy();
-    private native long PylonDeviceGetStreamGrabber(long index);
-    private native long PylonStreamGrabberOpen();
-    private native long PylonStreamGrabberClose();
-    private native long PylonStreamGrabberGetPayloadSize();
-    private native long PylonDeviceGrabSingleFrame(int channel, int timeout);
+    private native long pylonInitialize();
+    private native long pylonEnumerateDevices();
+    private native long pylonCreateDeviceByIndex(long index);
+    private native long pylonDeviceOpen();
+    private native long pylonDeviceClose();
+    private native long pylonDestroyDevice();
+    private native long pylonDeviceGetStreamGrabber(long index);
+    private native long pylonStreamGrabberOpen();
+    private native long pylonStreamGrabberClose();
+    private native long pylonStreamGrabberGetPayloadSize();
+    private native long pylonDeviceGrabSingleFrame(int channel, int timeout);
 
-    private native boolean PylonDeviceFeatureIsAvailable(String featureName);
-    private native long PylonDeviceFeatureFromString(String featureName, String value);
+    private native boolean pylonDeviceFeatureIsAvailable(String featureName);
+    private native long pylonDeviceFeatureFromString(String featureName, String value);
     
     // Custom functions of the JNI wrapper
-    private native long InitializeImageBuffer();
+    private native long initializeImageBuffer();
+    private native byte[] getBufferedImage();
+    private native int getBufferedImageWidth();
+    private native int getBufferedImageHeight();
 
     public static void main(String[] args) {
         PylonCJNI pylon = new PylonCJNI();
 
         // Initialize the Pylon SDK
-        if(pylon.PylonInitialize() != 0){
+        if(pylon.pylonInitialize() != 0){
             System.out.println("Library initialization failed");
             return;
         }
 
         // Enumerate devices
-        if(pylon.PylonEnumerateDevices() == 0){
+        if(pylon.pylonEnumerateDevices() == 0){
             System.out.println("Device enumeration failed");
             return;
         }
 
         // Create a device by index 0
-        if(pylon.PylonCreateDeviceByIndex(0) != 0){
+        if(pylon.pylonCreateDeviceByIndex(0) != 0){
             System.out.println("Device creation failed");
             return;
         }
 
         // Open the device
-        if(pylon.PylonDeviceOpen() != 0){
+        if(pylon.pylonDeviceOpen() != 0){
             System.out.println("Device open failed");
             return;
         }
 
         // Set the pixel format to Mono8 if available
-        if (pylon.PylonDeviceFeatureIsAvailable("EnumEntry_PixelFormat_Mono8"))
+        if (pylon.pylonDeviceFeatureIsAvailable("EnumEntry_PixelFormat_Mono8"))
         {
-            if(pylon.PylonDeviceFeatureFromString("PixelFormat", "Mono8") != 0)
+            if(pylon.pylonDeviceFeatureFromString("PixelFormat", "Mono8") != 0)
             {
                 System.out.println("Could not set pixel format to Mono8");
                 return;
@@ -63,15 +68,15 @@ public class PylonCJNI {
         }
         
         // Disable acquisition start trigger if available
-        if (pylon.PylonDeviceFeatureIsAvailable("EnumEntry_TriggerSelector_AcquisitionStart" ))
+        if (pylon.pylonDeviceFeatureIsAvailable("EnumEntry_TriggerSelector_AcquisitionStart" ))
         {
-            if(pylon.PylonDeviceFeatureFromString("TriggerSelector", "AcquisitionStart") != 0)
+            if(pylon.pylonDeviceFeatureFromString("TriggerSelector", "AcquisitionStart") != 0)
             {
                 System.out.println("Could not disable acquisition start trigger");
                 return;
             }
 
-            if(pylon.PylonDeviceFeatureFromString("TriggerMode", "Off") != 0)
+            if(pylon.pylonDeviceFeatureFromString("TriggerMode", "Off") != 0)
             {
                 System.out.println("Could not disable acquisition start trigger");
                 return;
@@ -79,15 +84,15 @@ public class PylonCJNI {
         }
 
         // Disable frame burst start trigger if available
-        if (pylon.PylonDeviceFeatureIsAvailable("EnumEntry_TriggerSelector_FrameBurstStart" ))
+        if (pylon.pylonDeviceFeatureIsAvailable("EnumEntry_TriggerSelector_FrameBurstStart" ))
         {
-            if(pylon.PylonDeviceFeatureFromString("TriggerSelector", "FrameBurstStart") != 0)
+            if(pylon.pylonDeviceFeatureFromString("TriggerSelector", "FrameBurstStart") != 0)
             {
                 System.out.println("Could not disable frame burst start trigger");
                 return;
             }
 
-            if(pylon.PylonDeviceFeatureFromString("TriggerMode", "Off") != 0)
+            if(pylon.pylonDeviceFeatureFromString("TriggerMode", "Off") != 0)
             {
                 System.out.println("Could not disable frame burst start trigger");
                 return;
@@ -95,47 +100,47 @@ public class PylonCJNI {
         }
 
         // Disable frame start trigger if available
-        if (pylon.PylonDeviceFeatureIsAvailable("EnumEntry_TriggerSelector_FrameBurstStart" ))
+        if (pylon.pylonDeviceFeatureIsAvailable("EnumEntry_TriggerSelector_FrameBurstStart" ))
         {
-            if(pylon.PylonDeviceFeatureFromString("TriggerSelector", "FrameStart") != 0)
+            if(pylon.pylonDeviceFeatureFromString("TriggerSelector", "FrameStart") != 0)
             {
                 System.out.println("Could not disable frame start trigger");
                 return;
             }
 
-            if(pylon.PylonDeviceFeatureFromString("TriggerMode", "Off") != 0)
+            if(pylon.pylonDeviceFeatureFromString("TriggerMode", "Off") != 0)
             {
                 System.out.println("Could not disable frame start trigger");
                 return;
             }
         }
 
-        if(pylon.PylonDeviceGetStreamGrabber(0) != 0){
+        if(pylon.pylonDeviceGetStreamGrabber(0) != 0){
             System.out.println("Stream grabber retrieval failed");
             return;
         }
 
-        if(pylon.PylonStreamGrabberOpen() != 0){
+        if(pylon.pylonStreamGrabberOpen() != 0){
             System.out.println("Stream grabber open failed");
             return;
         }
 
-        if(pylon.PylonStreamGrabberGetPayloadSize() != 0){
+        if(pylon.pylonStreamGrabberGetPayloadSize() != 0){
             System.out.println("Payload size retrieval failed");
             return;
         }
 
-        if(pylon.PylonStreamGrabberClose() != 0){
+        if(pylon.pylonStreamGrabberClose() != 0){
             System.out.println("Stream grabber close failed");
             return;
         }
 
-        if(pylon.InitializeImageBuffer() != 0){
+        if(pylon.initializeImageBuffer() != 0){
             System.out.println("Image buffer initialization failed");
             return;
         }
 
-        if(pylon.PylonDeviceGrabSingleFrame(0, 1000) != 2){
+        if(pylon.pylonDeviceGrabSingleFrame(0, 1000) != 2){
             System.out.println("Frame grab failed");
             return;
         }
