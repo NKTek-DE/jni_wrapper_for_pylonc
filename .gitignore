@@ -1,5 +1,4 @@
 .vscode
+build
 
-pyloncjni.dll
-PylonCJNI.h
-PylonCJNI.class
+src/org_nktek_PylonCJNI.h
